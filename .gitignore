@@ -1,14 +1,23 @@
-# Archivos de TensorFlow/Keras
-# *.h5  <- Eliminado
-# *.keras <- Eliminado
-# *.pb <- Eliminado
-# *.tflite <- Eliminado
+# === Ignorar Directorios Específicos ===
+# Ignorar todo el contenido de modelos_manuales
+modelos_manuales/
+# Ignorar todo el contenido de keras_tuner_modelos
+keras_tuner_modelos/
 
-# Archivos de TensorBoard logs
-**/logs/
-events.out.tfevents.*
+# === Reglas Generales (Comentadas o eliminadas para no interferir con mobilenet) ===
+# Las reglas generales para *.h5, logs, etc., no son necesarias aquí
+# si solo queremos incluir explícitamente el contenido de mobilenet.
+# Si quieres mantenerlas comentadas por referencia:
+# # Archivos de TensorFlow/Keras
+# # *.h5
+# # *.keras
+# # *.pb
+# # *.tflite
+# # Archivos de TensorBoard logs
+# # **/logs/
+# # events.out.tfevents.*
 
-# Archivos de Python
+# === Archivos de Python ===
 __pycache__/
 *.py[cod]
 *$py.class
@@ -30,25 +39,24 @@ wheels/
 .installed.cfg
 *.egg
 
-# Directorios y archivos de entornos virtuales
+# === Entornos Virtuales ===
 venv/
 ENV/
 env/
 env.bak/
 venv.bak/
 
-# Archivos de Jupyter Notebook
+# === Jupyter Notebook ===
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 *.ipynb
 
-# Archivos de Keras Tuner
-**/tuner_results/
-**/keras_tuner_experiment/tuner_results/
-
-# Archivos de cache y temporales
+# === Archivos de Cache y Temporales ===
 .cache/
 .DS_Store
 .vscode/
 *.swp
 *~
+
+# === Otros ===
+# (Puedes añadir otras reglas específicas aquí si es necesario)
