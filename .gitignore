@@ -1,0 +1,54 @@
+# Archivos de TensorFlow/Keras
+*.h5
+*.keras
+*.pb
+*.tflite
+
+# Archivos de TensorBoard logs
+**/logs/
+events.out.tfevents.*
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Directorios y archivos de entornos virtuales
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Archivos de Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.ipynb
+
+# Archivos de Keras Tuner
+**/tuner_results/
+**/keras_tuner_experiment/tuner_results/
+
+# Archivos de cache y temporales
+.cache/
+.DS_Store
+.vscode/
+*.swp
+*~
