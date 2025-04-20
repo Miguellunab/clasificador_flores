@@ -6,10 +6,57 @@ import numpy as np
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import os
+import shutil
+import tensorflowjs as tfjs
 
-os.makedirs('modelodensoAD', exist_ok=True)
-os.makedirs('modelocnnAD', exist_ok=True)
-os.makedirs('modelocnn2AD', exist_ok=True)
+# Crear directorios para los modelos
+def crear_directorios_modelo(nombre_base):
+    # Directorios para diferentes formatos del modelo
+    directorios = {
+        'h5': f'{nombre_base}',
+        'saved_model': f'{nombre_base}_saved_model',
+        'tfjs': f'{nombre_base}_tfjs'
+    }
+    
+    for directorio in directorios.values():
+        os.makedirs(directorio, exist_ok=True)
+        
+    return directorios
+
+# Función para guardar modelo en múltiples formatos
+def guardar_modelo(modelo, nombre_base):
+    # Crear directorios
+    directorios = crear_directorios_modelo(nombre_base)
+    
+    # 1. Guardar en formato H5 (compatibilidad)
+    h5_path = os.path.join(directorios['h5'], f"{nombre_base}.h5")
+    modelo.save(h5_path)
+    print(f"Modelo guardado en formato H5: {h5_path}")
+    
+    # 2. Guardar en formato SavedModel
+    saved_model_path = os.path.join(directorios['saved_model'], nombre_base)
+    tf.saved_model.save(modelo, saved_model_path)
+    print(f"Modelo guardado en formato SavedModel: {saved_model_path}")
+    
+    # 3. Convertir a TensorFlow.js
+    tfjs_path = os.path.join(directorios['tfjs'], nombre_base)
+    try:
+        # Limpiar directorio si existe
+        if os.path.exists(tfjs_path):
+            shutil.rmtree(tfjs_path)
+        os.makedirs(tfjs_path, exist_ok=True)
+        
+        # Convertir usando API de TensorFlow.js
+        tfjs.converters.save_keras_model(modelo, tfjs_path)
+        print(f"Modelo convertido a TensorFlow.js: {tfjs_path}")
+    except Exception as e:
+        print(f"Error al convertir a TensorFlow.js: {e}")
+    
+    return directorios
+
+# Crear directorios base para los modelos
+for modelo_dir in ['modelodensoAD', 'modelocnnAD', 'modelocnn2AD']:
+    crear_directorios_modelo(modelo_dir)
 
 # Cargamos el dataset de flores
 dataset, metadata = tfds.load('tf_flowers', as_supervised=True, with_info=True)
@@ -219,11 +266,11 @@ modeloCNN2AD.compile(optimizer='adam',
 #     validation_data=val_generator,
 #     callbacks=[tensorboardDensoAD]
 # )
-# Guardar el modelo (comentado)
-# modeloDensoAD.save('modelodensoAD/modelodensoAD.h5')
+# Guardar el modelo en múltiples formatos
+# guardar_modelo(modeloDensoAD, 'modelodensoAD')
 
 #Entrenamiento del segundo modelo (CNNAD)
-# Usar tensorboard (comentado)
+# Usar tensorboard
 tensorboardCNNAD = TensorBoard(log_dir='logs/cnnAD')
 
 #Entrenamos el modelo
@@ -233,8 +280,8 @@ modeloCNNAD.fit(
     validation_data=val_generator,
     callbacks=[tensorboardCNNAD]
 )
-#Guardar el modelo (comentado)
-modeloCNNAD.save('modelocnnAD/modelocnnAD.h5')
+#Guardar el modelo en múltiples formatos
+guardar_modelo(modeloCNNAD, 'modelocnnAD')
 
 #Entrenamiento del tercer modelo (CNN2AD)
 # Usar tensorboard
@@ -247,5 +294,5 @@ modeloCNNAD.save('modelocnnAD/modelocnnAD.h5')
 #     validation_data=val_generator,
 #     callbacks=[tensorboardCNN2AD]
 # )
-# # Guardar el modelo (descomentado)
-# modeloCNN2AD.save('modelocnn2AD/modelocnn2AD.h5')
+# # Guardar el modelo en múltiples formatos
+# guardar_modelo(modeloCNN2AD, 'modelocnn2AD')

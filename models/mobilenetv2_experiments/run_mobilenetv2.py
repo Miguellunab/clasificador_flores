@@ -6,16 +6,22 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
 import os
 import datetime
+import tensorflowjs as tfjs
+import shutil
 
 # --- Configuración ---
 IMG_SIZE = 224
 BATCH_SIZE = 32
 EXPERIMENT_NAME = f"mobilenetv2_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-RESULTS_DIR = os.path.join("mobilenetv2_experiments", EXPERIMENT_NAME)
+RESULTS_DIR = os.path.join("Resultados")
 LOG_DIR = os.path.join(RESULTS_DIR, "logs")
 MODEL_DIR = os.path.join(RESULTS_DIR, "model")
-os.makedirs(LOG_DIR, exist_ok=True)
-os.makedirs(MODEL_DIR, exist_ok=True)
+SAVED_MODEL_DIR = os.path.join(RESULTS_DIR, "saved_model")  # Nueva ruta para SavedModel
+TFJS_MODEL_DIR = os.path.join(RESULTS_DIR, "tfjs_model")  # Nueva ruta para TensorFlow.js
+
+# Crear directorios
+for dir_path in [LOG_DIR, MODEL_DIR, SAVED_MODEL_DIR, TFJS_MODEL_DIR]:
+    os.makedirs(dir_path, exist_ok=True)
 
 # --- Carga y Preprocesamiento de Datos ---
 dataset, metadata = tfds.load('tf_flowers', as_supervised=True, with_info=True)
@@ -88,9 +94,41 @@ history = model.fit(
     callbacks=[tensorboard_callback, early_stopping]
 )
 
-# --- Guardar modelo y logs ---
-model.save(os.path.join(MODEL_DIR, 'mobilenetv2_flowers.h5'))
-print(f"Modelo guardado en {MODEL_DIR}")
+# --- Guardar modelo en diferentes formatos ---
+# 1. Guardar en formato H5 (mantener para compatibilidad)
+h5_path = os.path.join(MODEL_DIR, 'mobilenetv2_flowers.h5')
+model.save(h5_path)
+print(f"Modelo guardado en formato H5: {h5_path}")
+
+# 2. Guardar en formato SavedModel (recomendado para TensorFlow 2.x)
+saved_model_path = os.path.join(SAVED_MODEL_DIR, 'mobilenetv2_flowers')
+tf.saved_model.save(model, saved_model_path)
+print(f"Modelo guardado en formato SavedModel: {saved_model_path}")
+
+# 3. Convertir directamente a TensorFlow.js
+tfjs_path = os.path.join(TFJS_MODEL_DIR, 'mobilenetv2_flowers')
+try:
+    # Limpiar directorio anterior si existe
+    if os.path.exists(tfjs_path):
+        shutil.rmtree(tfjs_path)
+    os.makedirs(tfjs_path, exist_ok=True)
+    
+    # Convertir usando la API de TensorFlow.js
+    tfjs.converters.save_keras_model(model, tfjs_path)
+    print(f"Modelo convertido a TensorFlow.js: {tfjs_path}")
+    
+    # Verificar archivos generados
+    print("Archivos TensorFlow.js generados:")
+    for root, dirs, files in os.walk(tfjs_path):
+        for file in files:
+            print(f"  - {os.path.join(root, file)}")
+            
+    print("\nPara usar este modelo en tu aplicación web:")
+    print(f"1. Copia los archivos de {tfjs_path} a tu aplicación web")
+    print("2. Actualiza la ruta del modelo en index.html")
+    print("3. Asegúrate de preprocesar las imágenes a tamaño 224x224 y normalizarlas a [0,1]")
+except Exception as e:
+    print(f"Error al convertir a TensorFlow.js: {e}")
 
 # --- Evaluación ---
 val_loss, val_acc = model.evaluate(val_dataset)
